@@ -1,11 +1,8 @@
-from sklearn.cluster import DBSCAN, KMeans
 from sklearn.decomposition import PCA
-from sklearn.metrics import silhouette_score
 import seaborn as sns
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import LabelEncoder, StandardScaler, MinMaxScaler
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 
 
 # Define a function to categorize age
@@ -38,7 +35,11 @@ for col in initial_df.columns:
     print(f"{col}: {initial_df[col].unique()}")
 
 # Clean and Prepare Data
-df = initial_df.drop(columns=['CustomerID', 'Married']).dropna()  # Or: df = df.fillna(df.mean())
+df = initial_df.drop(columns=['CustomerID']).dropna()  # Or: df = df.fillna(df.mean())
+
+# Check if there is an imbalance in the classes present in your target variable
+target_balance = df['Segmentation'].value_counts().reset_index()
+print("\nTarget Classes Balance: \n", target_balance)
 
 # Apply the function to the Age column
 df['Age'] = df['Age'].apply(categorize_age)
@@ -53,12 +54,10 @@ for col in categorical_columns:
 
 # Scale Numerical Features
 scaler = StandardScaler()
-# scaler = MinMaxScaler(feature_range=(0, 1))
-numeric_columns = df.select_dtypes(include=['int64', 'float64'])
-filtered_columns = numeric_columns.columns[numeric_columns.max() > 12]
-df[filtered_columns] = scaler.fit_transform(df[filtered_columns])
-print(f"\nNumeric Columns: \n{numeric_columns.columns}")
-print(f"\nFiltered Columns: \n{filtered_columns}")
+numeric_columns = df[['Gender', 'Married', 'Age', 'Graduated', 'Profession', 'WorkExperience',
+    'SpendingScore', 'FamilySize', 'Category']].columns
+df[numeric_columns] = scaler.fit_transform(df[numeric_columns])
+print(f"\nNumeric Columns: \n{numeric_columns}")
 
 # Final inspection of the preprocessed dataset
 print("\nCleaned Dataset Info:")
@@ -69,7 +68,7 @@ for col in df.columns:
 
 # Prepare Data for Clustering
 X = df.drop(columns=['Segmentation']).values  # Features
-y_true = df['Segmentation'].values  # True labels (if available for evaluation)
+y_true = df['Segmentation'].values  # True labels for evaluation
 
 # Apply PCA to Reduce Dimensions for Visualization
 pca = PCA(n_components=2)
@@ -83,11 +82,11 @@ print(y_true)
 print("\nFinal preprocessed X_pca:")
 print(X_pca)
 
-# # Calculate the correlation matrix of the Initial Dataset
-# correlation_matrix_df = df.corr()
-# #
-# # Visualize the correlation matrix using a heatmap
-# plt.figure(figsize=(10, 7))
-# sns.heatmap(correlation_matrix_df, annot=True, cmap='coolwarm', fmt='.2f', linewidths=0.5)
-# plt.title('Correlation Heatmap of the Initial Dataset')
-# plt.show()
+# Calculate the correlation matrix of the Initial Dataset
+correlation_matrix_df = df.corr()
+#
+# Visualize the correlation matrix using a heatmap
+plt.figure(figsize=(10, 7))
+sns.heatmap(correlation_matrix_df, annot=True, cmap='coolwarm', fmt='.2f', linewidths=0.5)
+plt.title('Correlation Heatmap of the Initial Dataset')
+plt.show()

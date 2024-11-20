@@ -3,37 +3,38 @@ from sklearn.metrics import silhouette_score, davies_bouldin_score
 from sklearn.decomposition import PCA
 from scipy.cluster.hierarchy import dendrogram, linkage
 from sklearn.preprocessing import StandardScaler, LabelEncoder
+from data_prep import X, y_true, X_pca
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-pd.options.display.max_columns = None
-data = pd.read_csv('/Users/audrius/Documents/VCSPython/ml-clustering-automobile/data/train-set.csv')
-
-# Clean and Prepare Data
-df_cleaned = data.drop(columns=['CustomerID']).dropna()  # Drop CustomerID and missing values
-
-# Encode Categorical Variables
-categorical_columns = df_cleaned.select_dtypes(include=['object']).columns
-le = LabelEncoder()
-for col in categorical_columns:
-    df_cleaned[col] = le.fit_transform(df_cleaned[col])
-
-# Scale Numerical Features
-scaler = StandardScaler()
-numerical_columns = df_cleaned.select_dtypes(include=['int64', 'float64']).columns
-df_cleaned[numerical_columns] = scaler.fit_transform(df_cleaned[numerical_columns])
-
-# Prepare Data for Clustering
-X = df_cleaned.drop(columns=['Segmentation']).values  # Features
-y_true = df_cleaned['Segmentation'].values  # True labels (if available for evaluation)
-
-# Apply PCA to Reduce Dimensions for Visualization
-pca = PCA(n_components=2)
-X_pca = pca.fit_transform(X)
+# pd.options.display.max_columns = None
+# data = pd.read_csv('/Users/audrius/Documents/VCSPython/ml-clustering-automobile/data/train-set.csv')
+#
+# # Clean and Prepare Data
+# df_cleaned = data.drop(columns=['CustomerID']).dropna()  # Drop CustomerID and missing values
+#
+# # Encode Categorical Variables
+# categorical_columns = df_cleaned.select_dtypes(include=['object']).columns
+# le = LabelEncoder()
+# for col in categorical_columns:
+#     df_cleaned[col] = le.fit_transform(df_cleaned[col])
+#
+# # Scale Numerical Features
+# scaler = StandardScaler()
+# numerical_columns = df_cleaned.select_dtypes(include=['int64', 'float64']).columns
+# df_cleaned[numerical_columns] = scaler.fit_transform(df_cleaned[numerical_columns])
+#
+# # Prepare Data for Clustering
+# X = df_cleaned.drop(columns=['Segmentation']).values  # Features
+# y_true = df_cleaned['Segmentation'].values  # True labels (if available for evaluation)
+#
+# # Apply PCA to Reduce Dimensions for Visualization
+# pca = PCA(n_components=2)
+# X_pca = pca.fit_transform(X)
 
 # --------------------- K-Means Clustering ---------------------
-kmeans = KMeans(n_clusters=4, random_state=42)
+kmeans = KMeans(n_clusters=3, random_state=42)
 kmeans_labels = kmeans.fit_predict(X)
 
 # Evaluate K-Means
@@ -41,7 +42,7 @@ kmeans_silhouette = silhouette_score(X, kmeans_labels)
 kmeans_davies_bouldin = davies_bouldin_score(X, kmeans_labels)
 
 # --------------------- DBSCAN Clustering ---------------------
-dbscan = DBSCAN(eps=0.5, min_samples=10)
+dbscan = DBSCAN(eps=0.2, min_samples=10)
 dbscan_labels = dbscan.fit_predict(X)
 
 # Filter DBSCAN noise for evaluation
@@ -64,6 +65,17 @@ agglo_labels = agglo.fit_predict(X)
 agglo_silhouette = silhouette_score(X, agglo_labels)
 agglo_davies_bouldin = davies_bouldin_score(X, agglo_labels)
 
+# --------------------- Summary of Clustering Metrics ---------------------
+clustering_summary = {
+    "Algorithm": ["K-Means", "DBSCAN", "Agglomerative"],
+    "Silhouette Score": [kmeans_silhouette, dbscan_silhouette, agglo_silhouette],
+    "Davies-Bouldin Score": [kmeans_davies_bouldin, dbscan_davies_bouldin, agglo_davies_bouldin]
+}
+
+clustering_summary_df = pd.DataFrame(clustering_summary)
+print("\nClustering Summary:")
+print(clustering_summary_df)
+
 # --------------------- Visualization ---------------------
 # Plot PCA-reduced Clustering Results
 plt.figure(figsize=(18, 7))
@@ -85,24 +97,3 @@ plt.title(f'Agglomerative Clustering\nSilhouette: {agglo_silhouette:.2f}, Davies
 
 plt.tight_layout()
 plt.show()
-
-# --------------------- Dendrogram for Agglomerative Clustering ---------------------
-plt.figure(figsize=(10, 7))
-Z = linkage(X, method='ward')
-dendrogram(Z)
-plt.title('Dendrogram for Agglomerative Clustering')
-plt.xlabel('Sample Index')
-plt.ylabel('Distance')
-plt.grid(True)
-plt.show()
-
-# --------------------- Summary of Clustering Metrics ---------------------
-clustering_summary = {
-    "Algorithm": ["K-Means", "DBSCAN", "Agglomerative"],
-    "Silhouette Score": [kmeans_silhouette, dbscan_silhouette, agglo_silhouette],
-    "Davies-Bouldin Score": [kmeans_davies_bouldin, dbscan_davies_bouldin, agglo_davies_bouldin]
-}
-
-clustering_summary_df = pd.DataFrame(clustering_summary)
-print("\nClustering Summary:")
-print(clustering_summary_df)
