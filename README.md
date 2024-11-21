@@ -4,7 +4,7 @@ An automobile company has plans to enter new markets with their existing product
 After intensive market research, they’ve deduced that the behavior of new market is similar to their existing market.
 In their existing market, the sales team has classified all customers into 4 segments (A, B, C, D ). Then, they 
 performed segmented outreach and communication for different segment of customers. This strategy has work 
-exceptionally well for them. They plan to use the same strategy on new markets and have identified 2627 new potential 
+exceptionally well for them. They plan to use the same strategy on new markets and have identified potential 
 customers.
 The dataset provides the details of the existing and potential customers of the company based on the purchase 
 history and the corresponding segments they have been classified into.
@@ -17,7 +17,7 @@ history and the corresponding segments they have been classified into.
 - `Profession` : profession of the customer
 - `WorkExperience` : work experience of the customer in years
 - `SpendingScore` : spending score of the customer
-- `FamilySiz`e : number of family members of the customer (including the customer)
+- `FamilySize` : number of family members of the customer (including the customer)
 - `Category` : anonymised category for the customer
 - `Segmentation` : (target variable) customer segment of the customer
 ## Methods Used
@@ -40,24 +40,31 @@ provides a single measure of the overall clustering quality.
 - Davies-Bouldin score - the score is defined as the average similarity measure of each cluster with its most similar 
 cluster, where similarity is the ratio of within-cluster distances to between-cluster distances. Thus, clusters which 
 are farther apart and less dispersed will result in a better score.
-- Dunn index (DI) (introduced by J. C. Dunn in 1974) - is an internal evaluation scheme, where the result is based 
+- Dunn index (DI) - is an internal evaluation scheme, where the result is based 
 on the clustered data itself. Higher the Dunn index value, better is the clustering. The number of clusters that 
 maximizes Dunn index is taken as the optimal number of clusters k.
-## Supporting metrics
+## Supporting methods
 - Elbow method to determine the optimal number of clusters in Hierarchical clustering and K-Means method;
-- Within-Cluster Sum of Squares (WCSS) to assess quality of clusters using;
+- Within-Cluster Sum of Squares (WCSS) to assess quality of clusters;
 - Squared Euclidean Distances.
-## Requirements
-1. Pasirinkti duomenų rinkinį.
-2. Sutvarkyti gautus duomenis.
-3. Įgyvendinti tris klasterizavimo metodus: K-means, DBSCAN ir Agglomerative.
-4. K-means ir Agglomerative metoduose naudoti alkūnės metodą optimaliam klasterių skaičiui nustatyti.
-5. Agglomerative metodui - nubraižyti dendrogramą.
-6. Nustayti geriausius parametrus.
-7. Gautiems sprendimams įvertinti taikyti tris klasterizavimo kokybės metrikas: Silhouette index, Davies-Bouldin score, Dunn score.
-8. Nubraižyti gautus klasterius.
-9. Išsiaiškinti, kodėl jūsų atveju vienas ar kitas algoritmas veikia geriau.
-10. Pristatyti rezultatus.
+## Results Interpretation
+A particular clustering algorithm outperforms others on particular dataset depending on dataset's structure, shape, 
+density and noise):\
+- K-Means: Best for compact, well-separated clusters with minimal noise.
+- DBSCAN: Ideal for datasets with arbitrary-shaped clusters, noise, and outliers.
+- Agglomerative Clustering: Useful for smaller datasets with hierarchical relationships.
+![Data Correlation Plot](./img/Summary.png)
+## Project Requirements
+1. Select a dataset.
+2. Clean and preprocess the obtained data.
+3. Implement three clustering methods: K-means, DBSCAN, and Agglomerative.
+4. Use the elbow method to determine the optimal number of clusters for K-means and Agglomerative methods.
+5. For the Agglomerative method, draw a dendrogram.
+6. Identify the best parameters.
+7. Evaluate the obtained results using three clustering quality metrics: Silhouette index, Davies-Bouldin score, 
+and Dunn score.
+8. Visualize the resulting clusters.
+9. Explain why one algorithm performs better than the others in your case.
+10. Present the results.
 ## Resources
 [Automobile Customer Segmentation Dataset](https://www.kaggle.com/datasets/akashdeepkuila/automobile-customer)
-
