@@ -40,9 +40,9 @@ provides a single measure of the overall clustering quality.
 - Davies-Bouldin score - the score is defined as the average similarity measure of each cluster with its most similar 
 cluster, where similarity is the ratio of within-cluster distances to between-cluster distances. Thus, clusters which 
 are farther apart and less dispersed will result in a better score.
-- Dunn index (DI) - is an internal evaluation scheme, where the result is based 
-on the clustered data itself. Higher the Dunn index value, better is the clustering. The number of clusters that 
-maximizes Dunn index is taken as the optimal number of clusters k.
+- Dunn index (DI) - is an internal evaluation scheme, where the result is based on the clustered data itself. Higher 
+the Dunn index value, better is the clustering. The number of clusters that maximizes Dunn index is taken as the 
+optimal number of clusters k.
 ## Supporting methods
 - Elbow method to determine the optimal number of clusters in Hierarchical clustering and K-Means method;
 - Within-Cluster Sum of Squares (WCSS) to assess quality of clusters;

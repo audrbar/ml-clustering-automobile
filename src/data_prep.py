@@ -2,23 +2,38 @@ from sklearn.decomposition import PCA
 import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import LabelEncoder, StandardScaler
+import math
+
+from sklearn.preprocessing import StandardScaler
 
 
 # Define a function to categorize age
 def categorize_age(age):
-    if age < 13:
-        return 0  # Child
-    elif age < 18:
-        return 1  # Teen
+    if age < 21:
+        return 0  # Youth
     elif age < 35:
-        return 2  # Young Adult
+        return 1  # Young Adult
     elif age < 50:
-        return 3  # Adult
+        return 2  # Adult
     elif age < 65:
-        return 4  # Middle Age
+        return 3  # Mature Adult
     else:
-        return 5  # Senior
+        return 4  # Senior
+
+
+def categorize_experience(experience):
+    if experience < 1:
+        return 0  # very low
+    elif experience < 3:
+        return 1  # low
+    elif experience < 6:
+        return 2  # moderate
+    elif experience < 9:
+        return 3  # high
+    elif experience < 12:
+        return 4  # very high
+    else:
+        return 5  # exceptional
 
 
 # Load Data
@@ -37,38 +52,42 @@ for col in initial_df.columns:
 # Clean and Prepare Data
 df = initial_df.drop(columns=['CustomerID']).dropna()  # Or: df = df.fillna(df.mean())
 
-# Check if there is an imbalance in the classes present in your target variable
+# Calculate target class balance and add percentage column
 target_balance = df['Segmentation'].value_counts().reset_index()
-print("\nTarget Classes Balance: \n", target_balance)
+target_balance.columns = ['Segmentation', 'Count']  # Rename columns for clarity
+target_balance['Percentage'] = (target_balance['Count'] / target_balance['Count'].sum()) * 100
+print("\nTarget Class Balance:")
+for index, row in target_balance.iterrows():
+    print(f"{row['Segmentation']} - {row['Count']}, {row['Percentage']:.1f}%")
 
 # Apply the function to the Age column
-df['Age'] = df['Age'].apply(categorize_age)
+df['Gender'] = df['Gender'].map({'Male': 0, 'Female': 1})
+df['Married'] = df['Married'].map({'No': 0, 'Yes': 1})
+df['Graduated'] = df['Graduated'].map({'No': 0, 'Yes': 1})
+df['Profession'] = df['Profession'].map({'Healthcare': 0, 'Engineer': 1, 'Lawyer': 2, 'Entertainment': 3,
+                                         'Artist': 4, 'Executive': 5, 'Doctor': 6, 'Homemaker': 7, 'Marketing': 8})
+df['SpendingScore'] = df['SpendingScore'].map({'Low': 0, 'Average': 1, 'High': 2})
+df['Category'] = df['Category'].map({'Category 1': 0, 'Category 2': 1, 'Category 3': 2, 'Category 4': 3,
+                                     'Category 5': 4, 'Category 6': 5, 'Category 7': 6})
 df['Segmentation'] = df['Segmentation'].map({'A': 0, 'B': 1, 'C': 2, 'D': 3})
-
-# Encode categorical columns
-categorical_columns = df.select_dtypes(include=['object']).columns
-print(f"\nCategorical Columns: \n{categorical_columns}")
-le = LabelEncoder()
-for col in categorical_columns:
-    df[col] = le.fit_transform(df[col])
-
-# Scale Numerical Features
-scaler = StandardScaler()
-numeric_columns = df[['Gender', 'Married', 'Age', 'Graduated', 'Profession', 'WorkExperience',
-    'SpendingScore', 'FamilySize', 'Category']].columns
-df[numeric_columns] = scaler.fit_transform(df[numeric_columns])
-print(f"\nNumeric Columns: \n{numeric_columns}")
+X_hist = df.drop(columns=['Segmentation'])
+df['Age'] = df['Age'].apply(categorize_age)
+df['WorkExperience'] = df['WorkExperience'].apply(categorize_experience)
 
 # Final inspection of the preprocessed dataset
-print("\nCleaned Dataset Info:")
+print("\nCleaned and Preprocessed Dataset Info:")
 print(df.info())
 print("\nCleaned Dataset Unique Values for Each Column:")
 for col in df.columns:
     print(f"{col}: {df[col].unique()}")
 
 # Prepare Data for Clustering
-X = df.drop(columns=['Segmentation']).values  # Features
+X_pre = df.drop(columns=['Segmentation']).values  # Features
 y_true = df['Segmentation'].values  # True labels for evaluation
+
+# Apply scaling (StandardScaler) on the X_pre
+scaler = StandardScaler()
+X = scaler.fit_transform(X_pre)
 
 # Apply PCA to Reduce Dimensions for Visualization
 pca = PCA(n_components=2)
@@ -82,11 +101,38 @@ print(y_true)
 print("\nFinal preprocessed X_pca:")
 print(X_pca)
 
-# Calculate the correlation matrix of the Initial Dataset
-correlation_matrix_df = df.corr()
+# # Define the number of rows and columns for the subplots
+# n_features = len(df.columns)
+# n_cols = 5  # Adjust as needed
+# n_rows = math.ceil(n_features / n_cols)
 #
-# Visualize the correlation matrix using a heatmap
-plt.figure(figsize=(10, 7))
-sns.heatmap(correlation_matrix_df, annot=True, cmap='coolwarm', fmt='.2f', linewidths=0.5)
-plt.title('Correlation Heatmap of the Initial Dataset')
-plt.show()
+# # Create the figure and axes
+# fig, axes = plt.subplots(n_rows, n_cols, figsize=(17, n_rows * 4))
+# axes = axes.flatten()  # Flatten axes for easier iteration
+#
+# # Plot each feature in a subplot
+# for i, column in enumerate(df.columns):
+#     # Get the current axis
+#     ax = axes[i]
+#
+#     # Plot value counts
+#     df[column].value_counts().sort_index().plot(kind='bar', ax=ax, color='skyblue', edgecolor='black')
+#
+#     # Set titles and labels
+#     ax.set_title(f'Distribution of {column}', fontsize=12)
+#     ax.set_xlabel(column, fontsize=10)
+#     ax.set_ylabel('Frequency', fontsize=10)
+#     ax.grid(axis='y', linestyle='--', alpha=0.7)
+#
+# # Adjust layout
+# plt.tight_layout()
+# plt.show()
+#
+# # Calculate the correlation matrix of the Initial Dataset
+# correlation_matrix_df = df.corr()
+# #
+# # Visualize the correlation matrix using a heatmap
+# plt.figure(figsize=(10, 7))
+# sns.heatmap(correlation_matrix_df, annot=True, cmap='coolwarm', fmt='.2f', linewidths=0.5)
+# plt.title('Correlation Heatmap of the Initial Dataset')
+# plt.show()

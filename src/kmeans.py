@@ -1,3 +1,4 @@
+import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from data_prep import X_pca
@@ -21,6 +22,7 @@ plt.ylabel('Within-Cluster Sum of Squares (WCSS)')
 plt.grid(True)
 plt.show()
 
+print(f"\nResults of the KMeans Clustering for each number of clusters:")
 # Define parameter ranges
 kmeans_cluster_values = [2, 3, 4, 5, 6]
 
@@ -35,45 +37,21 @@ for n_clusters in kmeans_cluster_values:
     # Calculate silhouette score for KMeans
     kmeans_score = silhouette_score(X_pca, kmeans_clusters)
     kmeans_silhouette_scores.append((n_clusters, kmeans_score))
-    print(f"Number of clusters: {n_clusters}, Silhouette Score: {kmeans_score:.4f}")
+    print(f"{n_clusters} clusters Silhouette Score: {kmeans_score:.4f}")
 
     # Plot KMeans clustering result
     plt.figure(figsize=(10, 7))
-    plt.scatter(X_pca[:, 0], X_pca[:, 1], c=kmeans_clusters, cmap='viridis', marker='o', edgecolor='k', alpha=0.6)
-    plt.title(f"KMeans (n_clusters={n_clusters})\nSilhouette Score: {kmeans_score:.4f}")
+    for cluster in np.unique(kmeans_clusters):
+        mask = kmeans_clusters == cluster
+        plt.scatter(X_pca[mask, 0], X_pca[mask, 1], label=f"Cluster {cluster}", edgecolor='k', s=50, alpha=0.6)
+    # plt.scatter(X_pca[:, 0], X_pca[:, 1], c=kmeans_clusters, cmap='viridis', marker='o', edgecolor='k', alpha=0.6)
+    plt.title(f"KMeans Clustering\nNumber of Clusters: {n_clusters}, Silhouette Score: {kmeans_score:.4f}")
     plt.xlabel("Feature 1")
     plt.ylabel("Feature 2")
+    plt.legend()
     plt.show()
 
 # Find best KMeans parameters based on the highest silhouette score
 best_kmeans_params = max(kmeans_silhouette_scores, key=lambda x: x[1])
-print(f"Best KMeans Parameters: n_clusters={best_kmeans_params[0]}")
-print(f"Best KMeans Silhouette Score: {best_kmeans_params[1]:.4f}")
-
-# Convert to DataFrame for better visualization
-silhouette_df = pd.DataFrame(kmeans_silhouette_scores, columns=['Number of Clusters', 'Silhouette Score'])
-
-# Print the DataFrame of silhouette scores
-print("\nSilhouette Scores for Each Cluster:")
-print(silhouette_df.to_string(index=False))
-
-# Make best KMeans clustering result
-best_kmeans = KMeans(n_clusters=best_kmeans_params[0], random_state=42)
-best_kmeans_clusters = best_kmeans.fit_predict(X_pca)
-
-# Plot silhouette scores
-plt.figure(figsize=(10, 7))
-plt.plot(silhouette_df['Number of Clusters'], silhouette_df['Silhouette Score'], marker='o', linestyle='-', color='b')
-plt.title('Silhouette Scores for Different Numbers of Clusters')
-plt.xlabel('Number of Clusters')
-plt.ylabel('Silhouette Score')
-plt.grid(True)
-plt.show()
-
-# Plot both best KMeans clustering results
-plt.figure(figsize=(10, 7))
-plt.scatter(X_pca[:, 0], X_pca[:, 1], c=best_kmeans_clusters, cmap='viridis', marker='o', edgecolor='k', alpha=0.6)
-plt.title(f"Best KMeans (n_clusters={best_kmeans_params[0]})\nSilhouette Score: {best_kmeans_params[1]:.4f}")
-plt.xlabel("Feature 1")
-plt.ylabel("Feature 2")
-plt.show()
+print("\nBest KMeans Clustering Parameters:")
+print(f"Number of clusters: {best_kmeans_params[0]}, Silhouette Score: {best_kmeans_params[1]:.4f}")

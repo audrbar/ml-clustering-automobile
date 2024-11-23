@@ -7,13 +7,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Increase recursion limit to handle larger dendrograms
-sys.setrecursionlimit(3000)
+sys.setrecursionlimit(4000)
 
 # Calculate Within Cluster Sum of Squares (WCSS) for different numbers of clusters
 wcss = []
 max_clusters = 8
 for k in range(1, max_clusters + 1):
-    agglomerative = AgglomerativeClustering(n_clusters=k, linkage='ward')
+    agglomerative = AgglomerativeClustering(n_clusters=k, linkage='complete')
     labels = agglomerative.fit_predict(X)
 
     # Calculate WCSS for the clusters formed by Agglomerative Clustering
@@ -29,7 +29,7 @@ for k in range(1, max_clusters + 1):
     wcss.append(np.sum(dists ** 2))
 
 # Plot Elbow Method
-plt.figure(figsize=(8, 5))
+plt.figure(figsize=(10, 6))
 plt.plot(range(1, max_clusters + 1), wcss, marker='o')
 plt.title('Elbow Method for Optimal K in Agglomerative Clustering')
 plt.xlabel('Number of Clusters (n_clusters)')
@@ -38,7 +38,8 @@ plt.show()
 
 # Define optimal k (from previous Elbow Method)
 optimal_clusters = 4
-print(f"\nOptimal clusters : {optimal_clusters}")
+print(f"\nResults of the Hierarchical (Agglomerative) Clustering for each linkage method:\nOptimal number of clusters: "
+      f"{optimal_clusters}")
 
 # List of linkage methods  and accuracy list
 linkage_methods = ['ward', 'complete', 'average', 'single']
@@ -54,6 +55,7 @@ for method in linkage_methods:
     try:
         accuracy = accuracy_score(y_true, y_predicted)
         accuracies.append((method, accuracy))
+        print(f"'{method.capitalize()} Linkage' accuracy: {accuracy:.4f}")
     except NameError:
         print("Ground truth (y_true) not provided, skipping accuracy calculation.")
         accuracies.append((method, None))
@@ -71,15 +73,22 @@ for method in linkage_methods:
     # Plot clusters in PCA-reduced space
     plt.figure(figsize=(12, 7))
     for cluster in np.unique(y_predicted):
-        plt.scatter(X_pca[:, 0], X_pca[:, 1], c=y_predicted, label=f'Cluster {cluster}', s=50, edgecolor='k')
-    plt.title(f'Hierarchical Clustering ({method.capitalize()} Linkage)')
+        plt.scatter(
+            X_pca[y_predicted == cluster, 0],
+            X_pca[y_predicted == cluster, 1],
+            label=f'Cluster {cluster}',
+            s=50, edgecolor='k', alpha=0.6
+        )
+    plt.title(
+        f"Hierarchical (Agglomerative) Clustering\n'{method.capitalize()} Linkage' accuracy: {accuracy:.4f}",
+        fontsize=14
+    )
     plt.xlabel('Component 1')
     plt.ylabel('Component 2')
     plt.legend()
     plt.grid(True)
     plt.show()
 
-# Print accuracies
-print("\nAccuracies for each linkage method (if y_true provided):")
-for method, accuracy in accuracies:
-    print(f"Linkage: {method}, Accuracy: {accuracy:.4f}")
+best_agglomerative_params = max(accuracies, key=lambda x: x[1])
+print("\nBest KMeans Clustering Parameters:")
+print(f"Number of clusters: {best_agglomerative_params[0]}, Silhouette Score: {best_agglomerative_params[1]:.4f}")
