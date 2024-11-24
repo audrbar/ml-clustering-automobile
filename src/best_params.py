@@ -1,7 +1,7 @@
 from sklearn.cluster import KMeans, DBSCAN, AgglomerativeClustering
 from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score, davies_bouldin_score, pairwise_distances
-from data_prep import X, X_pca, X_pre, X_hist
+from data_prep import X, X_pca, X_hist
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -28,12 +28,29 @@ def calculate_dunn_index(_X, labels):
 
     # Calculate intra-cluster distances (max distance within a cluster)
     intra_cluster_distances = []
-    for i in unique_labels:
-        cluster_i = _X[labels == i]
+    for u in unique_labels:
+        cluster_i = _X[labels == u]
         intra_dist = np.max(pairwise_distances(cluster_i))
         intra_cluster_distances.append(intra_dist)
 
     return np.min(inter_cluster_distances) / np.max(intra_cluster_distances)
+
+
+def describe_cluster_profiles(cluster_profiles_, feature_names_, cluster_ids_):
+    descriptions_ = []
+    for cluster_id in cluster_ids_:
+        profile = cluster_profiles_[cluster_profiles_['Cluster'] == cluster_id]
+        description = f"Cluster {cluster_id}:\n"
+        for feature_ in feature_names_:
+            value = profile[feature_].values[0]
+            if value > 0.7:
+                description += f"- High in {feature_}.\n"
+            elif value < 0.3:
+                description += f"- Low in {feature_}.\n"
+            else:
+                description += f"- Moderate in {feature_}.\n"
+        descriptions_.append(description)
+    return descriptions_
 
 
 # --------------------- Agglomerative Clustering ---------------------
@@ -158,7 +175,8 @@ xtick_labels = {
     'Gender': ['Male', 'Female'],
     'Married': ['No', 'Yes'],
     'Graduated': ['No', 'Yes'],
-    'Profession': ['Healthcare', 'Engineer', 'Lawyer', 'Entertainment', 'Artist', 'Executive', 'Doctor', 'Homemaker', 'Marketing'],
+    'Profession': ['Healthcare', 'Engineer', 'Lawyer', 'Entertainment', 'Artist', 'Executive', 'Doctor', 'Homemaker',
+                   'Marketing'],
     'SpendingScore': ['Low', 'Average', 'High'],
     'FamilySize': ['Small', 'Medium', 'Large'],
     'Category': ['Category 1', 'Category 2', 'Category 3', 'Category 4', 'Category 5', 'Category 6', 'Category 7']
@@ -231,6 +249,15 @@ cluster_profiles = compute_cluster_profiles(X_non_noise_df, feature_names).sort_
 # Print profiles for each cluster
 print("\nCustomer Profiles for Each Cluster:")
 print(cluster_profiles)
+
+# Generate descriptions for clusters
+cluster_ids = cluster_profiles['Cluster'].unique()
+feature_names = cluster_profiles.columns[1:]  # Exclude the 'Cluster' column
+descriptions = describe_cluster_profiles(cluster_profiles, feature_names, cluster_ids)
+
+# Print cluster descriptions
+for desc in descriptions:
+    print(desc)
 
 # Plot sorted cluster profiles with bar values
 fig, ax = plt.subplots(figsize=(10, 8))

@@ -52,7 +52,7 @@ optimal number of clusters k.
 - Squared Euclidean Distances.
 ## Results Interpretation
 A particular clustering algorithm outperforms others on particular dataset depending on dataset's structure, shape, 
-density and noise):\
+density and noise):
 - K-Means: Best for compact, well-separated clusters with minimal noise.
 - DBSCAN: Ideal for datasets with arbitrary-shaped clusters, noise, and outliers.
 - Agglomerative Clustering: Useful for smaller datasets with hierarchical relationships.
@@ -60,6 +60,23 @@ density and noise):\
 ![Data Correlation Plot](./img/Results_Kmeans.png)
 ![Data Correlation Plot](./img/Results_DBSCAN.png)
 ![Data Correlation Plot](./img/Results_Summary.png)
+
+### Cluster Descriptions:
+- Cluster 0:
+- - Predominantly male customers (90%).
+- - Young adults with low spending scores.
+- - Smaller family sizes compared to other clusters.
+- - Likely budget-conscious individuals with moderate purchasing power.
+- Cluster 1:
+- - Predominantly female customers (80%).
+- - Middle-aged with high spending scores.
+- - Larger families, indicating household-oriented purchases.
+- - Likely loyal and high-value customers.
+- Cluster 2:
+- - Balanced gender distribution.
+- - Young adults with moderate spending scores.
+- - Smaller families, indicating single professionals or couples.
+- - Likely occasional customers with moderate purchasing patterns.
 ## Project Requirements
 1. Select a dataset.
 2. Clean and preprocess the obtained data.
