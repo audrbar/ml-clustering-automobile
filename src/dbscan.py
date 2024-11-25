@@ -5,8 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Define parameter ranges
-dbscan_eps_values = [1.8, 1.9, 2]
-dbscan_min_samples_values = [20, 30, 50]
+dbscan_eps_values = [1.9, 2, 2.1]
+dbscan_min_samples_values = [30, 50, 60]
 dbscan_score = -1
 
 # Initialize lists to store silhouette scores

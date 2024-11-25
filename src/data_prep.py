@@ -60,7 +60,7 @@ print("\nTarget Class Balance:")
 for index, row in target_balance.iterrows():
     print(f"{row['Segmentation']} - {row['Count']}, {row['Percentage']:.1f}%")
 
-# Apply the function to the Age column
+# Apply the functions or mapping to the column to categorize data instead using LabelEncoder
 df['Gender'] = df['Gender'].map({'Male': 0, 'Female': 1})
 df['Married'] = df['Married'].map({'No': 0, 'Yes': 1})
 df['Graduated'] = df['Graduated'].map({'No': 0, 'Yes': 1})

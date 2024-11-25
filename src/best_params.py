@@ -2,6 +2,7 @@ from sklearn.cluster import KMeans, DBSCAN, AgglomerativeClustering
 from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score, davies_bouldin_score, pairwise_distances
 from data_prep import X, X_pca, X_hist
+import seaborn as sns
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -36,25 +37,30 @@ def calculate_dunn_index(_X, labels):
     return np.min(inter_cluster_distances) / np.max(intra_cluster_distances)
 
 
-def describe_cluster_profiles(cluster_profiles_, feature_names_, cluster_ids_):
-    descriptions_ = []
-    for cluster_id in cluster_ids_:
-        profile = cluster_profiles_[cluster_profiles_['Cluster'] == cluster_id]
-        description = f"Cluster {cluster_id}:\n"
+# Function to compute profiles for each cluster
+def compute_cluster_profiles(df, feature_names_):
+    profiles = []
+    clusters = df['Cluster'].unique()
+
+    for cluster_ in clusters:
+        cluster_data = df[df['Cluster'] == cluster_]
+        profile = {'Cluster': cluster_}
+
+        # Compute mean for numeric features
         for feature_ in feature_names_:
-            value = profile[feature_].values[0]
-            if value > 0.7:
-                description += f"- High in {feature_}.\n"
-            elif value < 0.3:
-                description += f"- Low in {feature_}.\n"
+            if feature_ not in ['Age', 'WorkExperience']:
+                profile[feature_] = cluster_data[feature_].mean()
             else:
-                description += f"- Moderate in {feature_}.\n"
-        descriptions_.append(description)
-    return descriptions_
+                # Compute the most common category for Age and WorkExperience
+                profile[feature] = cluster_data[feature_].mode()[0]
+
+        profiles.append(profile)
+
+    return pd.DataFrame(profiles)
 
 
 # --------------------- Agglomerative Clustering ---------------------
-agglomerative = AgglomerativeClustering(n_clusters=4, linkage='ward')
+agglomerative = AgglomerativeClustering(n_clusters=2, linkage='ward')
 agglomerative_labels = agglomerative.fit_predict(X)
 
 # Evaluate Agglomerative Clustering
@@ -63,7 +69,7 @@ agglomerative_davies_bouldin = davies_bouldin_score(X, agglomerative_labels)
 agglomerative_dunn = calculate_dunn_index(X, agglomerative_labels)
 
 # --------------------- DBSCAN Clustering ---------------------
-dbscan = DBSCAN(eps=1.9, min_samples=50)
+dbscan = DBSCAN(eps=1.9, min_samples=70)
 dbscan_labels = dbscan.fit_predict(X)
 
 # Filter DBSCAN noise for evaluation
@@ -178,7 +184,6 @@ xtick_labels = {
     'Profession': ['Healthcare', 'Engineer', 'Lawyer', 'Entertainment', 'Artist', 'Executive', 'Doctor', 'Homemaker',
                    'Marketing'],
     'SpendingScore': ['Low', 'Average', 'High'],
-    'FamilySize': ['Small', 'Medium', 'Large'],
     'Category': ['Category 1', 'Category 2', 'Category 3', 'Category 4', 'Category 5', 'Category 6', 'Category 7']
 }
 
@@ -200,7 +205,7 @@ for i, feature in enumerate(feature_names):
     plt.ylabel("Frequency")
 
     # Add appropriate xticks for categorical features
-    if feature in xtick_labels and feature not in ['Age', 'WorkExperience']:
+    if feature in xtick_labels and feature not in ['Age', 'WorkExperience', 'FamilySize']:
         plt.xticks(ticks=range(len(xtick_labels[feature])), labels=xtick_labels[feature], rotation=45)
     else:
         plt.xticks(rotation=45)
@@ -220,29 +225,6 @@ X_non_noise_df = pd.DataFrame(X_non_noise_, columns=feature_names)
 # Add cluster labels to the DataFrame
 X_non_noise_df['Cluster'] = kmeans_labels_
 
-
-# Function to compute profiles for each cluster
-def compute_cluster_profiles(df, feature_names_):
-    profiles = []
-    clusters = df['Cluster'].unique()
-
-    for cluster_ in clusters:
-        cluster_data = df[df['Cluster'] == cluster_]
-        profile = {'Cluster': cluster_}
-
-        # Compute mean for numeric features
-        for feature_ in feature_names_:
-            if feature_ not in ['Age', 'WorkExperience']:
-                profile[feature_] = cluster_data[feature_].mean()
-            else:
-                # Compute the most common category for Age and WorkExperience
-                profile[feature] = cluster_data[feature_].mode()[0]
-
-        profiles.append(profile)
-
-    return pd.DataFrame(profiles)
-
-
 # Compute cluster profiles
 cluster_profiles = compute_cluster_profiles(X_non_noise_df, feature_names).sort_values(by='Cluster')
 
@@ -250,23 +232,14 @@ cluster_profiles = compute_cluster_profiles(X_non_noise_df, feature_names).sort_
 print("\nCustomer Profiles for Each Cluster:")
 print(cluster_profiles)
 
-# Generate descriptions for clusters
-cluster_ids = cluster_profiles['Cluster'].unique()
-feature_names = cluster_profiles.columns[1:]  # Exclude the 'Cluster' column
-descriptions = describe_cluster_profiles(cluster_profiles, feature_names, cluster_ids)
-
-# Print cluster descriptions
-for desc in descriptions:
-    print(desc)
-
 # Plot sorted cluster profiles with bar values
-fig, ax = plt.subplots(figsize=(10, 8))
+fig, ax = plt.subplots(figsize=(12, 7), facecolor='gainsboro')
 
 # Plot the bar chart
 cluster_profiles.set_index('Cluster').plot(kind='bar', ax=ax, legend=True)
-plt.title('Sorted Customer Profiles for Each Cluster')
+plt.title('Customer Profiles for Each Cluster')
 plt.ylabel('Normalized Feature Value')
-plt.xlabel('Cluster')
+plt.xlabel('Clusters')
 plt.xticks(rotation=0)
 plt.tight_layout()
 
@@ -274,4 +247,13 @@ plt.tight_layout()
 for container in ax.containers:
     ax.bar_label(container, fmt='%.2f', label_type='edge', fontsize=9, padding=3)
 
+plt.show()
+
+# Display the table as a heatmap
+plt.figure(figsize=(12, 7), facecolor='gainsboro')
+sns.heatmap(cluster_profiles.set_index('Cluster'), annot=True, cbar=False, fmt='.2f', cmap="Oranges")
+plt.title("Cluster Profiles")
+plt.xlabel("Features")
+plt.ylabel("Clusters")
+plt.tight_layout()
 plt.show()

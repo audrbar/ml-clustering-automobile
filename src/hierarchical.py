@@ -90,5 +90,5 @@ for method in linkage_methods:
     plt.show()
 
 best_agglomerative_params = max(accuracies, key=lambda x: x[1])
-print("\nBest KMeans Clustering Parameters:")
-print(f"Number of clusters: {best_agglomerative_params[0]}, Silhouette Score: {best_agglomerative_params[1]:.4f}")
+print("\nBest Hierarchical (Agglomerative) Clustering Parameters:")
+print(f"Method: {best_agglomerative_params[0]}, Silhouette Score: {best_agglomerative_params[1]:.4f}")
